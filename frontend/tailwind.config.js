@@ -4,33 +4,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        hydro: {
-          950: '#040810',
-          900: '#080E1A', // Clean Hydro Deep Blue & Aqua Slate
-          850: '#0D1626',
-          800: '#111C2E', // Card surface elevated dark marine
-          750: '#17253D',
-          700: '#1E3252',
-          600: '#2A436D',
-          500: '#3D5E94',
+        cleantech: {
+          950: '#030807',
+          900: '#050E0C', // Deep Emerald Carbon
+          850: '#091814',
+          800: '#0E241F', // Card surface obsidian glass
+          750: '#14332C',
+          700: '#1B4239', // High-tech jade border
+          600: '#255A4E',
+          500: '#347A6B',
         },
-        aquatic: {
-          cyan: '#06B6D4',
-          cyanGlow: 'rgba(6, 182, 212, 0.25)',
-          blue: '#3B82F6',
-          blueGlow: 'rgba(59, 130, 246, 0.25)',
+        mint: {
+          neon: '#00F5A0', // Electric CleanTech Mint
+          glow: 'rgba(0, 245, 160, 0.25)',
+          dark: '#00B878',
         },
-        depletion: {
-          red: '#EF4444',
-          redGlow: 'rgba(239, 68, 68, 0.25)',
+        aqua: {
+          cyan: '#00D9F5', // Cyan Glacier
+          glow: 'rgba(0, 217, 245, 0.25)',
+          deep: '#0284C7',
         },
-        penalty: {
-          amber: '#F59E0B',
-          amberGlow: 'rgba(245, 158, 11, 0.25)',
+        danger: {
+          crimson: '#FF4D6D', // Coral Crimson for critical depletion
+          glow: 'rgba(255, 77, 109, 0.25)',
         },
-        compliant: {
-          emerald: '#10B981',
-          emeraldGlow: 'rgba(16, 185, 129, 0.25)',
+        warning: {
+          amber: '#FFB800', // Radiant Sun Amber for moderate drawdown & appeal
+          glow: 'rgba(255, 184, 0, 0.25)',
         },
       },
       fontFamily: {
@@ -39,21 +39,11 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
       boxShadow: {
-        'hydro-glow': '0 0 25px -5px rgba(6, 182, 212, 0.35)',
-        'depletion-glow': '0 0 25px -5px rgba(239, 68, 68, 0.35)',
-        'penalty-glow': '0 0 25px -5px rgba(245, 158, 11, 0.35)',
-        'compliant-glow': '0 0 25px -5px rgba(16, 185, 129, 0.35)',
-        'console-hud': 'inset 0 0 20px rgba(6, 182, 212, 0.05), 0 0 20px rgba(0, 0, 0, 0.8)',
-      },
-      animation: {
-        'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'wave-flow': 'wave 4s ease-in-out infinite',
-      },
-      keyframes: {
-        wave: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-4px)' },
-        },
+        'mint-glow': '0 0 30px -5px rgba(0, 245, 160, 0.35)',
+        'aqua-glow': '0 0 30px -5px rgba(0, 217, 245, 0.35)',
+        'crimson-glow': '0 0 30px -5px rgba(255, 77, 109, 0.35)',
+        'amber-glow': '0 0 30px -5px rgba(255, 184, 0, 0.35)',
+        'cockpit': 'inset 0 0 30px rgba(0, 245, 160, 0.03), 0 10px 30px -10px rgba(0, 0, 0, 0.7)',
       },
     },
   },

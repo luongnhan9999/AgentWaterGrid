@@ -45,7 +45,7 @@ export const AppealModal: React.FC<AppealModalProps> = ({
   if (!isOpen || !policy) return null;
 
   // Calculate 10% required bond
-  const escrowWei = BigInt(policy.escrow_amount);
+  const escrowWei = BigInt(policy.escrow_amount || 0);
   const requiredBondWei = (escrowWei * 10n) / 100n > 0n ? (escrowWei * 10n) / 100n : 1n;
   const requiredBondGen = formatGen(requiredBondWei);
 
@@ -83,103 +83,112 @@ export const AppealModal: React.FC<AppealModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Appeal error:', err);
-      setError(err?.message || 'Appellate filing failed.');
+      setError(err?.message || 'Failed to execute supreme appeal.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-xl my-8 p-6 md:p-8 rounded-2xl bg-hydro-850 border border-purple-500/50 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="w-full max-w-xl my-8 p-6 sm:p-8 rounded-2xl bg-obsidian-900 border border-warning-amber/40 shadow-2xl relative text-slate-100">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white transition"
+          className="absolute top-5 right-5 text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-obsidian-800"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
+        <div className="flex items-center space-x-3 mb-5">
+          <div className="p-3 rounded-xl bg-warning-amber/15 text-warning-amber border border-warning-amber/30 shadow-[0_0_15px_rgba(255,184,0,0.2)]">
             <Scale className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-heading text-xl font-bold text-white">Supreme Appellate Court Challenge</h2>
-            <p className="text-xs text-slate-400 font-sans">
-              24-Block Cooling Window • Policy #{policy.policy_id} ({policy.aquifer_basin_id})
+            <h2 className="font-heading text-lg sm:text-xl font-bold text-white">
+              File Supreme Appellate Review
+            </h2>
+            <p className="text-xs text-slate-400 font-mono">
+              Policy #{policy.policy_id} • Basin {policy.aquifer_basin_id}
             </p>
           </div>
         </div>
 
-        {/* Bond Requirement Card */}
-        <div className="mb-4 p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 text-xs font-mono space-y-1">
-          <div className="flex justify-between text-purple-200">
-            <span>Mandatory Dispute Bond (10%):</span>
-            <span className="font-bold text-purple-300 text-sm">{requiredBondGen} GEN</span>
+        {/* Bond requirement card */}
+        <div className="mb-5 p-4 rounded-xl bg-obsidian-850 border border-warning-amber/30 text-xs font-mono space-y-2">
+          <div className="flex justify-between items-center text-slate-300">
+            <span>Escrow Coverage Value:</span>
+            <span className="text-white font-bold">{formatGen(policy.escrow_amount)} GEN</span>
           </div>
-          <p className="text-[11px] text-purple-300/80">
-            If the appeal is upheld, the bond is refunded. If dismissed, the bond is forfeited to the counterparty.
+          <div className="flex justify-between items-center text-warning-amber font-bold">
+            <span className="flex items-center">
+              <ShieldCheck className="w-4 h-4 mr-1.5" />
+              Required 10% Appellate Staked Bond:
+            </span>
+            <span className="text-base">{requiredBondGen} GEN</span>
+          </div>
+          <p className="text-[11px] text-slate-400 pt-1 leading-relaxed">
+            Staking a 10% bond prevents frivolous claims. If the appellate AI jury overturns the breach, your 10% bond is fully refunded. If upheld, the bond is forfeited into the community relief fund.
           </p>
-        </div>
-
-        {/* Supplemental feeds */}
-        <div className="mb-4 p-3 rounded-xl bg-hydro-800 border border-hydro-700">
-          <span className="text-[11px] font-mono text-aquatic-cyan flex items-center mb-1">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-compliant-emerald" />
-            Accredited Supplemental Data Feeds
-          </span>
-          <div className="space-y-1.5 mt-2">
-            {SUPPLEMENTAL_FEEDS.map((f, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setSuppUrl(f.url)}
-                className="w-full text-left p-2 rounded-lg bg-hydro-900 hover:bg-hydro-750 border border-hydro-700 text-[11px] text-slate-300 hover:text-white transition"
-              >
-                <div className="font-semibold text-purple-300">{f.name}</div>
-                <div className="text-[10px] text-slate-400 truncate">{f.url}</div>
-              </button>
-            ))}
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono text-slate-300 mb-1">
-              Dispute Justification / Technical Explanation
+            <label className="block text-xs font-mono text-slate-300 mb-1.5 font-semibold">
+              Appellate Justification & Technical Grounds
             </label>
             <textarea
-              rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-hydro-900 border border-hydro-700 text-slate-100 font-sans text-xs focus:outline-none focus:border-purple-400"
-              placeholder="State the hydrological rationale for contesting the verdict..."
+              rows={3}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-obsidian-700 text-slate-100 font-sans text-xs focus:outline-none focus:border-warning-amber transition resize-none"
+              placeholder="State ground truth, sensor anomaly reasons, or corroborating piezometer evidence..."
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-slate-300 mb-1">
-              Supplemental Sensor Telemetry URL
+            <label className="block text-xs font-mono text-slate-300 mb-1.5 font-semibold">
+              Supplemental Accredited Telemetry URL
             </label>
             <input
               type="url"
               value={suppUrl}
               onChange={(e) => setSuppUrl(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-hydro-900 border border-hydro-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-400"
-              placeholder="https://environment.data.gov.uk/..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-obsidian-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-warning-amber transition"
+              placeholder="https://..."
               required
             />
+
+            <div className="mt-2 space-y-1.5">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+                Recommended Supplemental Sensors:
+              </span>
+              {SUPPLEMENTAL_FEEDS.map((f, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSuppUrl(f.url)}
+                  className={`w-full text-left p-2 rounded-lg border text-[11px] transition ${
+                    suppUrl === f.url
+                      ? 'bg-warning-amber/10 border-warning-amber text-warning-amber'
+                      : 'bg-obsidian-950/70 hover:bg-obsidian-800 border-obsidian-750 text-slate-300'
+                  }`}
+                >
+                  <div className="font-semibold">{f.name}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{f.url}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-depletion-red/10 border border-depletion-red/40 text-depletion-red text-xs">
+            <div className="p-3 rounded-xl bg-alert-crimson/15 border border-alert-crimson/40 text-alert-crimson text-xs">
               {error}
             </div>
           )}
 
           {txHash && (
-            <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/40 text-purple-300 text-xs font-mono truncate">
+            <div className="p-3 rounded-xl bg-warning-amber/15 border border-warning-amber/40 text-warning-amber text-xs font-mono truncate">
               Appellate Tx: {txHash}
             </div>
           )}
@@ -189,14 +198,14 @@ export const AppealModal: React.FC<AppealModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition"
+              className="px-4 py-2.5 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition hover:bg-obsidian-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center space-x-2 px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-heading font-bold text-xs tracking-wider uppercase transition shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:opacity-50"
+              className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning-amber to-amber-600 hover:from-amber-400 hover:to-amber-500 text-obsidian-950 font-heading font-bold text-xs tracking-wider uppercase transition shadow-[0_0_15px_rgba(255,184,0,0.3)] disabled:opacity-50"
             >
               {loading ? (
                 <>

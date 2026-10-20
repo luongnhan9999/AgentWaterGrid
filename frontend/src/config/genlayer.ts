@@ -5,7 +5,7 @@ export const STUDIONET_CHAIN_ID_HEX = '0xF22F';
 export const STUDIONET_RPC_URL = 'https://studio.genlayer.com/api';
 export const STUDIO_URL = 'https://studio.genlayer.com';
 
-// Authoritative Intelligent Contract deployed on GenLayer Studionet
+// Authoritative Intelligent Contract deployed on GenLayer StudioNet
 export const DEFAULT_CONTRACT_ADDRESS = '0x933a7C4fCa26ECA2AE65F2d4537A68A0D18f7628';
 
 export function getSavedContractAddress(): string {
@@ -28,7 +28,11 @@ export function getSavedContractAddress(): string {
 
 export function saveContractAddress(address: string) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('agentwatergrid_contract_address', address.trim());
+    try {
+      localStorage.setItem('agentwatergrid_contract_address', address.trim());
+    } catch {
+      // ignore
+    }
   }
 }
 
@@ -117,62 +121,91 @@ export interface GridStats {
   owner: string;
 }
 
-// GenVM Calldata Encoding Helpers
-const TYPE_INT = 0;
-const TYPE_STR = 1;
-const TYPE_ARR = 2;
-const TYPE_MAP = 3;
-const TYPE_BYTES = 4;
-const TYPE_BOOL = 5;
-const TYPE_ADDRESS = 6;
+/* -------------------------------------------------------------------------- */
+/*                           GenVM Calldata Encoding                          */
+/* -------------------------------------------------------------------------- */
 
-function encodeNum(to: number[], n: bigint) {
-  let val = n;
-  while (val >= 0x80n) {
-    to.push(Number((val & 0x7fn) | 0x80n));
-    val >>= 7n;
+const BITS_IN_TYPE = 3;
+const TYPE_SPECIAL = 0;
+const TYPE_PINT = 1;
+const TYPE_NINT = 2;
+const TYPE_STR = 4;
+const TYPE_ARR = 5;
+const TYPE_MAP = 6;
+const SPECIAL_NULL = (0 << BITS_IN_TYPE) | TYPE_SPECIAL;
+const SPECIAL_FALSE = (1 << BITS_IN_TYPE) | TYPE_SPECIAL;
+const SPECIAL_TRUE = (2 << BITS_IN_TYPE) | TYPE_SPECIAL;
+
+function writeNum(to: number[], data: bigint) {
+  if (data === 0n) {
+    to.push(0);
+    return;
   }
-  to.push(Number(val & 0x7fn));
+  let curData = data;
+  while (curData > 0n) {
+    let cur = Number(curData & 0x7fn);
+    curData >>= 7n;
+    if (curData > 0n) {
+      cur |= 128;
+    }
+    to.push(cur);
+  }
 }
 
-function encodeNumWithType(to: number[], n: bigint, type: number) {
-  const combined = (n << 3n) | BigInt(type & 0x07);
-  encodeNum(to, combined);
+function encodeNumWithType(to: number[], data: bigint, type: number) {
+  const res = (data << BigInt(BITS_IN_TYPE)) | BigInt(type);
+  writeNum(to, res);
 }
 
-function encodeMap(to: number[], entries: [string, any][]) {
-  encodeNumWithType(to, BigInt(entries.length), TYPE_MAP);
-  for (const [k, v] of entries) {
-    encodeVal(to, k);
+function encodeNum(to: number[], data: bigint) {
+  if (data >= 0n) {
+    encodeNumWithType(to, data, TYPE_PINT);
+  } else {
+    encodeNumWithType(to, -data - 1n, TYPE_NINT);
+  }
+}
+
+function encodeMap(to: number[], arr: [string, any][]) {
+  const newEntries = arr.map(([k, v]) => [
+    Array.from(k, (x) => x.codePointAt(0)!),
+    new TextEncoder().encode(k),
+    v,
+  ] as const);
+
+  newEntries.sort((v1, v2) => {
+    const l = v1[0];
+    const r = v2[0];
+    for (let index = 0; index < l.length && index < r.length; index++) {
+      const cur = l[index] - r[index];
+      if (cur !== 0) return cur;
+    }
+    return l.length - r.length;
+  });
+
+  encodeNumWithType(to, BigInt(newEntries.length), TYPE_MAP);
+  for (const [, k, v] of newEntries) {
+    writeNum(to, BigInt(k.length));
+    for (const c of k) {
+      to.push(c);
+    }
     encodeVal(to, v);
   }
 }
 
 function encodeVal(to: number[], val: any) {
   if (val === null || val === undefined) {
-    encodeNumWithType(to, 0n, TYPE_INT);
+    to.push(SPECIAL_NULL);
   } else if (typeof val === 'boolean') {
-    encodeNumWithType(to, val ? 1n : 0n, TYPE_BOOL);
+    to.push(val ? SPECIAL_TRUE : SPECIAL_FALSE);
   } else if (typeof val === 'number') {
-    encodeNumWithType(to, BigInt(val), TYPE_INT);
+    encodeNum(to, BigInt(val));
   } else if (typeof val === 'bigint') {
-    encodeNumWithType(to, val, TYPE_INT);
+    encodeNum(to, val);
   } else if (typeof val === 'string') {
-    // Check if it's an EVM address
-    if (val.startsWith('0x') && val.length === 42 && /^[0-9a-fA-F]+$/.test(val.slice(2))) {
-      const hex = val.slice(2).toLowerCase();
-      const bytes: number[] = [];
-      for (let i = 0; i < hex.length; i += 2) {
-        bytes.push(parseInt(hex.substr(i, 2), 16));
-      }
-      encodeNumWithType(to, BigInt(bytes.length), TYPE_ADDRESS);
-      for (const b of bytes) to.push(b);
-    } else {
-      const encoded = new TextEncoder().encode(val);
-      encodeNumWithType(to, BigInt(encoded.length), TYPE_STR);
-      for (const b of encoded) {
-        to.push(b);
-      }
+    const encoded = new TextEncoder().encode(val);
+    encodeNumWithType(to, BigInt(encoded.length), TYPE_STR);
+    for (const b of encoded) {
+      to.push(b);
     }
   } else if (Array.isArray(val)) {
     encodeNumWithType(to, BigInt(val.length), TYPE_ARR);
@@ -241,7 +274,9 @@ export async function readContract(
       if (start !== -1) {
         return JSON.parse(str.slice(start));
       }
-      return str;
+      // If result is plain string/number
+      const cleanStr = str.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim();
+      return cleanStr;
     }
     return JSON.parse(result);
   } catch {
@@ -329,7 +364,7 @@ export async function waitForTransactionReceipt(txHash: string, timeoutMs = 9000
     }
     await new Promise((r) => setTimeout(r, 3000));
   }
-  throw new Error(`Transaction confirmation timed out after ${timeoutMs / 1000}s`);
+  throw new Error(`Transaction confirmation timed out after ${Math.round(timeoutMs / 1000)}s`);
 }
 
 export async function writeContractWithMetaMask(
@@ -339,12 +374,12 @@ export async function writeContractWithMetaMask(
   contractAddress: string = getSavedContractAddress()
 ): Promise<string> {
   if (typeof window === 'undefined' || !(window as any).ethereum) {
-    throw new Error('MetaMask or Web3 wallet not detected. Please install MetaMask to execute on-chain transactions.');
+    throw new Error('MetaMask is not detected. Please install MetaMask to interact with GenLayer.');
   }
 
   const ethereum = (window as any).ethereum;
 
-  // Ensure StudioNet (Chain ID: 61999 / 0xF22F)
+  // Auto-switch to StudioNet
   try {
     await ethereum.request({
       method: 'wallet_switchEthereumChain',

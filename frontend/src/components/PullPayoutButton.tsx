@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coins, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Coins, Loader2, CheckCircle2, AlertCircle, ArrowDownToLine } from 'lucide-react';
 import {
   readContract,
   writeContractWithMetaMask,
@@ -60,22 +60,30 @@ export const PullPayoutButton: React.FC<PullPayoutButtonProps> = ({
     }
   };
 
-  const hasBalance = BigInt(claimableWei) > 0n;
+  let hasBalance = false;
+  try {
+    hasBalance = BigInt(claimableWei || 0) > 0n;
+  } catch {
+    hasBalance = false;
+  }
   const formattedGen = formatGen(claimableWei);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-hydro-800/90 border border-hydro-750 gap-4">
-      <div className="flex items-center space-x-3">
-        <div className={`p-2.5 rounded-lg ${hasBalance ? 'bg-compliant-emerald/20 text-compliant-emerald' : 'bg-hydro-750 text-slate-400'}`}>
+    <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 rounded-2xl bg-obsidian-850 border border-obsidian-750 gap-4 transition hover:border-obsidian-700">
+      <div className="flex items-center space-x-3.5">
+        <div className={`p-3 rounded-xl transition ${hasBalance ? 'bg-neon-mint/15 text-neon-mint border border-neon-mint/30 shadow-neon-glow' : 'bg-obsidian-950 text-slate-400 border border-obsidian-750'}`}>
           <Coins className="w-5 h-5" />
         </div>
         <div>
-          <div className="text-xs font-mono text-slate-400 uppercase tracking-wide">
-            Pull-Payment Escrow Safety Buffer
+          <div className="text-xs font-mono text-slate-400 uppercase tracking-wider flex items-center space-x-2">
+            <span>Pull-Payment Protected Buffer</span>
+            <span className="text-[10px] bg-obsidian-950 px-2 py-0.5 rounded text-neon-cyan border border-obsidian-750">
+              Zero Reentrancy
+            </span>
           </div>
-          <div className="text-sm font-sans text-slate-200">
+          <div className="text-sm font-sans text-slate-200 mt-0.5">
             Claimable Balance:{' '}
-            <strong className={`font-mono ${hasBalance ? 'text-compliant-emerald font-bold' : 'text-slate-400'}`}>
+            <strong className={`font-mono ${hasBalance ? 'text-neon-mint font-bold text-base' : 'text-slate-400'}`}>
               {formattedGen} GEN
             </strong>
           </div>
@@ -84,13 +92,13 @@ export const PullPayoutButton: React.FC<PullPayoutButtonProps> = ({
 
       <div className="flex items-center space-x-3 w-full sm:w-auto">
         {statusMsg && (
-          <span className="text-xs font-mono text-compliant-emerald flex items-center">
+          <span className="text-xs font-mono text-neon-mint flex items-center truncate">
             <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
             {statusMsg}
           </span>
         )}
         {errorMsg && (
-          <span className="text-xs font-mono text-depletion-red flex items-center">
+          <span className="text-xs font-mono text-alert-crimson flex items-center truncate">
             <AlertCircle className="w-3.5 h-3.5 mr-1" />
             {errorMsg}
           </span>
@@ -99,11 +107,7 @@ export const PullPayoutButton: React.FC<PullPayoutButtonProps> = ({
         <button
           onClick={handleClaim}
           disabled={!hasBalance || loading}
-          className={`flex items-center justify-center space-x-2 px-5 py-2.5 rounded-lg font-heading font-bold text-xs uppercase tracking-wider transition ${
-            hasBalance
-              ? 'bg-compliant-emerald hover:bg-emerald-400 text-hydro-950 shadow-compliant-glow'
-              : 'bg-hydro-750 text-slate-500 cursor-not-allowed border border-hydro-700'
-          }`}
+          className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-neon-mint to-neon-cyan hover:from-emerald-400 hover:to-cyan-400 text-obsidian-950 font-heading font-bold text-xs uppercase tracking-wider transition shadow-neon-glow disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {loading ? (
             <>
@@ -112,8 +116,8 @@ export const PullPayoutButton: React.FC<PullPayoutButtonProps> = ({
             </>
           ) : (
             <>
-              <Coins className="w-4 h-4" />
-              <span>Withdraw Payout</span>
+              <ArrowDownToLine className="w-4 h-4" />
+              <span>Withdraw to Wallet</span>
             </>
           )}
         </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, ExternalLink, Loader2, ShieldCheck, Check } from 'lucide-react';
+import { X, AlertTriangle, ExternalLink, Loader2, ShieldCheck, Check, Radio } from 'lucide-react';
 import { writeContractWithMetaMask, waitForTransactionReceipt, WaterPolicyData } from '../config/genlayer';
 
 interface TriggerClaimModalProps {
@@ -68,48 +68,60 @@ export const TriggerClaimModal: React.FC<TriggerClaimModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-xl my-8 p-6 md:p-8 rounded-2xl bg-hydro-850 border border-penalty-amber/40 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="w-full max-w-xl my-8 p-6 sm:p-8 rounded-2xl bg-obsidian-900 border border-alert-crimson/40 shadow-2xl relative text-slate-100">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white transition"
+          className="absolute top-5 right-5 text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-obsidian-800"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 rounded-xl bg-penalty-amber/15 text-penalty-amber border border-penalty-amber/30">
+        <div className="flex items-center space-x-3 mb-5">
+          <div className="p-3 rounded-xl bg-alert-crimson/15 text-alert-crimson border border-alert-crimson/30 shadow-[0_0_15px_rgba(255,77,109,0.2)]">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-heading text-xl font-bold text-white">File Depletion / Salinity Alert</h2>
-            <p className="text-xs text-slate-400 font-sans">
-              Policy #{policy.policy_id} • Basin {policy.aquifer_basin_id}
+            <h2 className="font-heading text-lg sm:text-xl font-bold text-white tracking-wide">
+              File Depletion & Salinity Claim
+            </h2>
+            <p className="text-xs text-slate-400 font-mono">
+              Aquifer Basin ID: <span className="text-neon-mint font-semibold">{policy.aquifer_basin_id}</span> • Policy #{policy.policy_id}
             </p>
           </div>
         </div>
 
         {/* Accredited Feeds notice */}
-        <div className="mb-4 p-3 rounded-xl bg-hydro-800 border border-hydro-700">
-          <span className="text-[11px] font-mono text-aquatic-cyan flex items-center mb-2">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-compliant-emerald" />
-            Accredited Hydrological Data Authorities
-          </span>
-          <p className="text-[11px] text-slate-300 mb-2">
-            Contract rules strictly reject unaccredited domains. Telemetry must originate from:
-            <code className="text-aquatic-cyan ml-1">USGS, Copernicus, NOAA, GRDC, BAFG, or UK Env Agency</code>.
+        <div className="mb-5 p-4 rounded-xl bg-obsidian-850 border border-obsidian-750">
+          <div className="text-xs font-mono text-neon-mint flex items-center mb-1.5 font-semibold">
+            <ShieldCheck className="w-4 h-4 mr-1.5 text-neon-mint" />
+            Accredited Hydrological Telemetry Providers
+          </div>
+          <p className="text-[11px] text-slate-300 leading-relaxed mb-3">
+            GenVM consensus validates that hydrological telemetry originates strictly from authorized scientific agencies:
+            <span className="text-neon-cyan font-mono block mt-1">USGS, Copernicus Land, NOAA, GRDC, BAFG, UK Env Agency</span>
           </p>
 
-          <div className="space-y-1.5 mt-2">
+          <div className="space-y-2">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+              Quick Select Accredited Feeds:
+            </span>
             {ACCREDITED_SAMPLES.map((s, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setFeedUrl(s.url)}
-                className="w-full text-left p-2 rounded-lg bg-hydro-900 hover:bg-hydro-750 border border-hydro-700 text-[11px] text-slate-300 hover:text-white transition"
+                className={`w-full text-left p-2.5 rounded-lg border transition ${
+                  feedUrl === s.url
+                    ? 'bg-neon-mint/10 border-neon-mint text-white'
+                    : 'bg-obsidian-950/70 hover:bg-obsidian-800 border-obsidian-750 text-slate-300'
+                }`}
               >
-                <div className="font-semibold text-aquatic-cyan">{s.name}</div>
-                <div className="text-[10px] text-slate-400 truncate">{s.url}</div>
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className={feedUrl === s.url ? 'text-neon-mint' : 'text-slate-200'}>{s.name}</span>
+                  {feedUrl === s.url && <span className="text-[10px] font-mono bg-neon-mint/20 text-neon-mint px-1.5 py-0.5 rounded">Selected</span>}
+                </div>
+                <div className="text-[10px] text-slate-400 truncate font-mono mt-0.5">{s.url}</div>
               </button>
             ))}
           </div>
@@ -117,39 +129,39 @@ export const TriggerClaimModal: React.FC<TriggerClaimModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono text-slate-300 mb-1">
-              Live Sensor / Telemetry Endpoint URL
+            <label className="block text-xs font-mono text-slate-300 mb-1.5 font-semibold">
+              Telemetry Data Endpoint (URL)
             </label>
             <input
               type="url"
               value={feedUrl}
               onChange={(e) => setFeedUrl(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-hydro-900 border border-hydro-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-aquatic-cyan"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-obsidian-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-neon-mint transition"
               placeholder="https://waterdata.usgs.gov/..."
               required
             />
           </div>
 
-          <div className="p-3 rounded-lg bg-hydro-900/80 border border-hydro-750 text-xs space-y-1 font-mono text-slate-300">
-            <div className="flex justify-between">
-              <span className="text-slate-400">Tolerable Drawdown SLA:</span>
-              <span className="text-white">&le; {policy.max_tolerable_drawdown_m} cm</span>
+          <div className="p-3.5 rounded-xl bg-obsidian-850/80 border border-obsidian-750 text-xs space-y-1.5 font-mono text-slate-300">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Max Permitted Drawdown SLA:</span>
+              <span className="text-neon-mint font-semibold">&le; {policy.max_tolerable_drawdown_m} cm</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Salinity Upper Limit:</span>
-              <span className="text-white">&le; {policy.max_salinity_tds_ppm} PPM TDS</span>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Max Tolerable Salinity Limit:</span>
+              <span className="text-neon-cyan font-semibold">&le; {policy.max_salinity_tds_ppm} PPM TDS</span>
             </div>
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-depletion-red/10 border border-depletion-red/40 text-depletion-red text-xs">
+            <div className="p-3 rounded-xl bg-alert-crimson/15 border border-alert-crimson/40 text-alert-crimson text-xs">
               {error}
             </div>
           )}
 
           {txHash && (
-            <div className="p-3 rounded-lg bg-penalty-amber/10 border border-penalty-amber/40 text-penalty-amber text-xs font-mono truncate">
-              Consensus Tx: {txHash}
+            <div className="p-3 rounded-xl bg-warning-amber/15 border border-warning-amber/40 text-warning-amber text-xs font-mono truncate">
+              Broadcasting Tx: {txHash}
             </div>
           )}
 
@@ -158,24 +170,24 @@ export const TriggerClaimModal: React.FC<TriggerClaimModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition"
+              className="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition hover:bg-obsidian-800"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center space-x-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-penalty-amber to-amber-600 hover:from-amber-400 hover:to-amber-500 text-hydro-950 font-heading font-bold text-xs tracking-wider uppercase transition shadow-penalty-glow disabled:opacity-50"
+              className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-alert-crimson to-pink-600 hover:from-pink-500 hover:to-pink-600 text-white font-heading font-bold text-xs tracking-wider uppercase transition shadow-lg disabled:opacity-50"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Submitting Alert...</span>
+                  <span>Transmitting Alert...</span>
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  <span>File Depletion Claim</span>
+                  <span>Submit Depletion Alert</span>
                 </>
               )}
             </button>
