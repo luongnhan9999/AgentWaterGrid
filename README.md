@@ -33,6 +33,8 @@ Traditional EVM smart contracts cannot inspect unstructured hydrological sensor 
 | **Description** | AgentWaterGrid is a decentralized water-rights indemnity protocol built on GenLayer. Industrial facilities lock GEN escrow to guarantee sustainable extraction limits. When droughts or saline intrusions occur, community water boards submit accredited USGS or Copernicus piezometer feeds. An on-chain GenLayer AI Tribunal reads the telemetry directly via non-deterministic web rendering and adjudicates aquifer drawdown against policy SLAs, automatically releasing disaster relief grants or returning refunds after an appellate cooling window. |
 | **Network** | **GenLayer StudioNet (Chain ID: 61999 / Hex 0xF22F)** |
 | **Contract Address** | `0x933a7C4fCa26ECA2AE65F2d4537A68A0D18f7628` |
+| **Live Web3 Application** | [https://agentwatergrid.vercel.app](https://agentwatergrid.vercel.app) |
+| **GitHub Repository** | [https://github.com/luongnhan9999/AgentWaterGrid](https://github.com/luongnhan9999/AgentWaterGrid) |
 
 ---
 
