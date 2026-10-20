@@ -8,7 +8,8 @@ import {
   Settings,
   RefreshCw,
   Activity,
-  Layers,
+  Radio,
+  Cpu,
 } from 'lucide-react';
 import {
   STUDIONET_CHAIN_ID,
@@ -80,82 +81,119 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-cleantech-950/95 backdrop-blur-md border-b border-cleantech-700/80 shadow-2xl">
+    <header className="sticky top-0 z-40 bg-obsidian-950/95 backdrop-blur-md border-b border-obsidian-800 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo & Protocol Title */}
           <div className="flex items-center space-x-3.5">
-            <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-mint-neon/20 via-cleantech-800 to-aqua-cyan/20 border border-mint-neon/40 shadow-mint-glow">
-              <Droplets className="w-6 h-6 text-mint-neon" />
-              <span className="w-2.5 h-2.5 rounded-full bg-aqua-cyan absolute -bottom-0.5 -right-0.5 animate-pulse" />
+            <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-neon-mint/20 via-obsidian-850 to-neon-cyan/20 border border-neon-mint/40 shadow-neon-glow">
+              <Droplets className="w-6 h-6 text-neon-mint" />
+              <span className="w-2.5 h-2.5 rounded-full bg-neon-cyan absolute -bottom-0.5 -right-0.5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center space-x-2.5">
                 <span className="font-heading font-extrabold text-2xl text-white tracking-tight">
-                  AgentWater<span className="text-mint-neon">Grid</span>
+                  AgentWater<span className="text-neon-mint">Grid</span>
                 </span>
-                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider font-semibold bg-mint-neon/10 text-mint-neon border border-mint-neon/30">
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider font-semibold bg-neon-mint/10 text-neon-mint border border-neon-mint/30">
                   <Activity className="w-3 h-3 animate-pulse" />
                   <span>STUDIONET 61999</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-sans hidden md:block">
+              <p className="text-[11px] text-slate-400 font-mono tracking-tight hidden sm:block">
                 Autonomous Desalination & Groundwater Depletion Parametric Escrow
               </p>
             </div>
           </div>
 
-          {/* Right Header Navigation & Actions */}
+          {/* Center Protocol Live Telemetry Strip (hidden on mobile) */}
+          <div className="hidden xl:flex items-center space-x-4 px-4 py-1.5 rounded-xl bg-obsidian-900 border border-obsidian-800 text-[11px] font-mono text-slate-300">
+            <span className="flex items-center text-neon-mint">
+              <Radio className="w-3 h-3 mr-1.5 animate-ping" />
+              ORACLE ACTIVE
+            </span>
+            <span className="text-obsidian-750">|</span>
+            <span className="text-slate-400">
+              USGS & COPERNICUS WHITELISTED
+            </span>
+            <span className="text-obsidian-750">|</span>
+            <span className="text-neon-cyan flex items-center">
+              <Cpu className="w-3 h-3 mr-1" />
+              GENVM CONSENSUS
+            </span>
+          </div>
+
+          {/* Action Toolbar & Wallet */}
           <div className="flex items-center space-x-3">
-            {/* Refresh Live Data */}
+            {/* Refresh Button */}
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              title="Sync On-Chain State from GenLayer StudioNet"
-              className="p-2.5 rounded-xl bg-cleantech-850 border border-cleantech-700 text-slate-300 hover:text-mint-neon hover:border-mint-neon/40 transition disabled:opacity-50"
+              className="p-2.5 rounded-xl bg-obsidian-900 hover:bg-obsidian-850 text-slate-300 hover:text-neon-mint border border-obsidian-800 transition"
+              title="Refresh on-chain data"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-mint-neon' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-neon-mint' : ''}`} />
             </button>
 
-            {/* Contract Address Pill */}
-            <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-cleantech-850 border border-cleantech-700 text-xs font-mono">
+            {/* Contract Quick Pill */}
+            <button
+              onClick={handleCopyContract}
+              className="hidden lg:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-850 border border-obsidian-800 text-xs font-mono text-slate-300 transition"
+              title="Copy Smart Contract Address"
+            >
               <span className="text-slate-400">Contract:</span>
-              <span className="text-mint-neon font-semibold">{shortenAddress(getSavedContractAddress(), 4)}</span>
-              <button
-                onClick={handleCopyContract}
-                className="text-slate-400 hover:text-white transition"
-                title="Copy Contract Address"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-mint-neon" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="text-slate-400 hover:text-white transition"
-                title="Configure Contract Address"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
-            </div>
+              <span className="text-neon-cyan">{shortenAddress(getSavedContractAddress())}</span>
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-neon-mint" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-slate-400 hover:text-white" />
+              )}
+            </button>
 
-            {/* Wallet Integration */}
+            {/* Network Switcher Button */}
+            <button
+              onClick={handleSwitchNetwork}
+              className="hidden md:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-obsidian-900 hover:bg-obsidian-850 border border-obsidian-800 text-xs font-mono text-slate-300 transition"
+              title="Switch or Add StudioNet to Wallet"
+            >
+              <span className="w-2 h-2 rounded-full bg-neon-mint animate-pulse" />
+              <span>StudioNet</span>
+            </button>
+
+            {/* Contract Settings Toggle */}
+            <button
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className="p-2.5 rounded-xl bg-obsidian-900 hover:bg-obsidian-850 text-slate-300 hover:text-white border border-obsidian-800 transition"
+              title="Configure Contract Address"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {/* Wallet Connect / User Balance HUD */}
             {walletAddress ? (
-              <div className="flex items-center space-x-2">
-                <div className="hidden sm:flex flex-col items-end px-3.5 py-1 rounded-xl bg-cleantech-850 border border-cleantech-700 text-right">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">Operator Balance</span>
-                  <span className="text-xs font-mono font-bold text-mint-neon">{balance || '0.000'} GEN</span>
+              <div className="flex items-center space-x-2 p-1.5 pr-3 rounded-2xl bg-obsidian-900 border border-neon-mint/30 shadow-neon-glow">
+                <div className="px-3 py-1.5 rounded-xl bg-obsidian-950 font-mono text-xs text-white border border-obsidian-800">
+                  <span className="text-slate-400 text-[10px] mr-1">GEN:</span>
+                  <strong className="text-neon-mint font-bold">{balance}</strong>
                 </div>
-                <button
-                  onClick={onDisconnectWallet}
-                  className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-cleantech-800 hover:bg-cleantech-750 border border-cleantech-600 text-xs font-mono text-slate-200 transition shadow-lg"
-                >
-                  <span className="w-2 h-2 rounded-full bg-mint-neon animate-ping" />
-                  <span className="font-semibold">{shortenAddress(walletAddress, 4)}</span>
-                </button>
+
+                <div className="flex items-center space-x-2 pl-1">
+                  <div className="w-2 h-2 rounded-full bg-neon-mint animate-pulse" />
+                  <span className="text-xs font-mono text-slate-200">
+                    {shortenAddress(walletAddress)}
+                  </span>
+                  <button
+                    onClick={onDisconnectWallet}
+                    className="text-[10px] font-mono text-slate-400 hover:text-alert-crimson ml-1 transition"
+                  >
+                    Disconnect
+                  </button>
+                </div>
               </div>
             ) : (
               <button
                 onClick={onConnectWallet}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-mint-neon via-emerald-400 to-aqua-cyan hover:opacity-95 text-cleantech-950 font-heading font-bold text-xs tracking-wider uppercase transition shadow-mint-glow"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-neon-mint to-neon-cyan hover:from-emerald-400 hover:to-cyan-400 text-obsidian-950 font-heading font-bold text-xs uppercase tracking-wider transition shadow-neon-glow"
               >
                 <Wallet className="w-4 h-4" />
                 <span>Connect Wallet</span>
@@ -163,40 +201,44 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
         </div>
-      </div>
 
-      {/* Contract Settings Modal */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="w-full max-w-md p-6 rounded-2xl bg-cleantech-900 border border-cleantech-700 shadow-2xl space-y-4">
-            <h3 className="font-heading text-lg font-bold text-white">Target StudioNet Contract</h3>
-            <p className="text-xs text-slate-400">
-              Contract deployed on GenLayer StudioNet (Chain ID: 61999).
-            </p>
-            <input
-              type="text"
-              value={tempAddress}
-              onChange={(e) => setTempAddress(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-cleantech-950 border border-cleantech-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-mint-neon"
-              placeholder="0x..."
-            />
-            <div className="flex justify-end space-x-3 pt-2">
-              <button
-                onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition"
+        {/* Contract Address Override Settings Dropdown */}
+        {isSettingsOpen && (
+          <div className="p-4 mb-4 rounded-2xl bg-obsidian-900 border border-obsidian-750 shadow-2xl text-xs space-y-3 font-mono animate-fadeIn">
+            <div className="flex items-center justify-between text-slate-300 font-semibold">
+              <span>GenLayer Smart Contract Configuration</span>
+              <a
+                href={`${STUDIO_URL}/contracts/${getSavedContractAddress()}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-neon-cyan hover:underline flex items-center"
               >
-                Cancel
-              </button>
+                <span>View on Studio</span>
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={tempAddress}
+                onChange={(e) => setTempAddress(e.target.value)}
+                placeholder="0x..."
+                className="flex-1 px-3 py-2 rounded-xl bg-obsidian-950 border border-obsidian-750 text-slate-100 font-mono text-xs focus:outline-none focus:border-neon-mint transition"
+              />
               <button
                 onClick={handleSaveContract}
-                className="px-4 py-2 rounded-xl bg-mint-neon text-cleantech-950 font-heading font-bold text-xs uppercase tracking-wider hover:bg-emerald-300 transition shadow-mint-glow"
+                className="px-4 py-2 rounded-xl bg-neon-mint text-obsidian-950 font-bold hover:bg-emerald-400 transition"
               >
                 Save & Reload
               </button>
             </div>
+            <p className="text-[11px] text-slate-400">
+              Deployed contract address on GenLayer StudioNet. Changes persist in local browser storage.
+            </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 };
