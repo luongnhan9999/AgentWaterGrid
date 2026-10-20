@@ -32,7 +32,7 @@ Traditional EVM smart contracts cannot inspect unstructured hydrological sensor 
 | **One-Liner** | Autonomous groundwater depletion & desalination parametric escrow evaluated by AI on live USGS telemetry. |
 | **Description** | AgentWaterGrid is a decentralized water-rights indemnity protocol built on GenLayer. Industrial facilities lock GEN escrow to guarantee sustainable extraction limits. When droughts or saline intrusions occur, community water boards submit accredited USGS or Copernicus piezometer feeds. An on-chain GenLayer AI Tribunal reads the telemetry directly via non-deterministic web rendering and adjudicates aquifer drawdown against policy SLAs, automatically releasing disaster relief grants or returning refunds after an appellate cooling window. |
 | **Network** | **GenLayer StudioNet (Chain ID: 61999 / Hex 0xF22F)** |
-| **Contract Address** | `0x933a7C4fCa26ECA2AE65F2d4537A68A0D18f7628` |
+| **Contract Address** | `0x71ab6FC206F02a426E28d8700BA530a101F47D85` |
 | **Live Web3 Application** | [https://agentwatergrid.vercel.app](https://agentwatergrid.vercel.app) |
 | **GitHub Repository** | [https://github.com/luongnhan9999/AgentWaterGrid](https://github.com/luongnhan9999/AgentWaterGrid) |
 
@@ -42,7 +42,7 @@ Traditional EVM smart contracts cannot inspect unstructured hydrological sensor 
 
 - **Network:** GenLayer StudioNet (Chain ID: `61999` / Hex: `0xF22F`)
 - **RPC URL:** `https://studio.genlayer.com/api`
-- **Intelligent Contract Address:** [`0x933a7C4fCa26ECA2AE65F2d4537A68A0D18f7628`](https://studio.genlayer.com)
+- **Intelligent Contract Address:** [`0x71ab6FC206F02a426E28d8700BA530a101F47D85`](https://studio.genlayer.com)
 - **Deployment Transaction Hash:** `0x4e736ecfee5d9cdbb1315d6d88dc6138de4e2340dc93355d683274ab2098e2a4`
 - **Initial Monitored Policy (Live):** Policy #1 — `CENTRAL-VALLEY-AQUIFER-B4` (1.0 GEN Escrow, Tx: `0xca3f955dc63439df48efc6c74e593a84e22f9858b1b70e7e320ec7dd89ffcd20`)
 

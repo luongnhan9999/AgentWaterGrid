@@ -3,9 +3,8 @@
   "chainId": 61999,
   "chainIdHex": "0xF22F",
   "rpcUrl": "https://studio.genlayer.com/api",
-  "contractAddress": "0x933a7C4fCa26ECA2AE65F2d4537A68A0D18f7628",
-  "transactionHash": "0x4e736ecfee5d9cdbb1315d6d88dc6138de4e2340dc93355d683274ab2098e2a4",
-  "deployerAddress": "0xF34587A45C397281Ef6BDd839d4A1de2DEe393ad",
-  "status": "5",
-  "deployedAt": "2026-10-20T03:52:27Z"
+  "contractAddress": "0x71ab6FC206F02a426E28d8700BA530a101F47D85",
+  "deployerAddress": "0x52c5e913fc54d00cba5df3312268bf66035661f8",
+  "status": "ACCEPTED",
+  "deployedAt": "2026-10-20T11:54:00Z"
 }
