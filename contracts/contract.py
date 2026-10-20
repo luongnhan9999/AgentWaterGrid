@@ -30,21 +30,43 @@ class ContractError(Exception):
     pass
 
 
-def _addr_str(addr: Address) -> str:
-    """Safely format an Address into a lowercase hex string."""
+def _addr_str(addr) -> str:
+    """Safely format an Address, int, or string into a lowercase hex string."""
+    if isinstance(addr, Address):
+        try:
+            return addr.as_hex.lower()
+        except Exception:
+            pass
     try:
-        return addr.as_hex.lower()
+        if isinstance(addr, int):
+            return f"0x{addr:040x}".lower()
     except Exception:
-        return str(addr).lower()
+        pass
+    return str(addr).lower().strip()
+
+
+def _to_address(val) -> Address:
+    """Safely convert Address, int (from calldata/runner), or hex string into a true Address instance."""
+    if isinstance(val, Address):
+        return val
+    try:
+        if isinstance(val, int):
+            return Address(f"0x{val:040x}")
+        s = str(val).strip()
+        if s.startswith("0x") and len(s) == 42:
+            return Address(s)
+    except Exception:
+        pass
+    return Address(ZERO_ADDRESS)
 
 
 def _get_sender() -> Address:
     """Safely obtain transaction sender across GenVM runtime versions."""
     try:
-        return gl.message.sender_address
+        return _to_address(gl.message.sender_address)
     except Exception:
         try:
-            return gl.message.sender
+            return _to_address(gl.message.sender)
         except Exception:
             raise ContractError("Cannot resolve sender address.")
 
@@ -125,7 +147,8 @@ class Contract(gl.Contract):
         except Exception:
             pass
 
-        target_owner = initial_owner if _addr_str(initial_owner) != ZERO_ADDRESS else deployer
+        cand = _to_address(initial_owner)
+        target_owner = cand if _addr_str(cand) != ZERO_ADDRESS else deployer
         self.owner = target_owner
         self.total_water_locked = bigint(0)
         self.total_policies_settled = u32(0)
@@ -142,9 +165,10 @@ class Contract(gl.Contract):
         """Transfers native GEN tokens with Pull-Payment fallback to eliminate lost funds."""
         if amount <= bigint(0):
             return
-        rec_str = _addr_str(recipient)
+        rec_addr = _to_address(recipient)
+        rec_str = _addr_str(rec_addr)
         try:
-            gl.get_contract_at(recipient).emit_transfer(value=u256(int(amount)))
+            gl.get_contract_at(rec_addr).emit_transfer(value=u256(int(amount)))
         except Exception:
             curr = self.claimable_balances.get(rec_str, bigint(0))
             self.claimable_balances[rec_str] = curr + amount
@@ -189,11 +213,12 @@ class Contract(gl.Contract):
         if len(clean_basin) < 4:
             raise ContractError("Valid aquifer basin/wellhead ID required.")
 
-        if _addr_str(community_representative) == ZERO_ADDRESS:
+        comm_addr = _to_address(community_representative)
+        if _addr_str(comm_addr) == ZERO_ADDRESS:
             raise ContractError("Valid community representative address required.")
 
-        sender = _get_sender()
-        if _addr_str(sender) == _addr_str(community_representative):
+        sender = _to_address(_get_sender())
+        if _addr_str(sender) == _addr_str(comm_addr):
             raise ContractError("Enterprise cannot designate themselves as community beneficiary.")
 
         dur_secs = bigint(int(duration_blocks) * 3 if int(duration_blocks) > 0 else int(DEFAULT_WATER_POLICY_SECONDS))
@@ -207,7 +232,7 @@ class Contract(gl.Contract):
         new_policy = WaterEscrowPolicy(
             policy_id=policy_id,
             enterprise=sender,
-            community_rep=community_representative,
+            community_rep=comm_addr,
             dispute_initiator=empty_addr,
             escrow_amount=escrow,
             dispute_bond=bigint(0),
@@ -251,7 +276,7 @@ class Contract(gl.Contract):
         if p.status not in (STATUS_POLICY_ACTIVE, STATUS_UNRESOLVED):
             raise ContractError("Policy is not in an active or retryable status.")
 
-        sender = _get_sender()
+        sender = _to_address(_get_sender())
         if _addr_str(sender) != _addr_str(p.community_rep):
             raise ContractError("Role Violation: Only the registered community representative can file a depletion alert.")
 
@@ -445,7 +470,7 @@ Respond ONLY with valid JSON without markdown fences:
         if p.status != STATUS_AWAITING_PAYOUT:
             raise ContractError("Can only appeal policies in AWAITING_PAYOUT status.")
 
-        sender = _get_sender()
+        sender = _to_address(_get_sender())
         if _addr_str(sender) != _addr_str(p.enterprise) and _addr_str(sender) != _addr_str(p.community_rep):
             raise ContractError("Role Violation: Only enterprise or community representative can file an appeal.")
 
@@ -719,7 +744,7 @@ Respond ONLY with valid JSON:
     def claim_payout(self) -> None:
         """Pull-payment safety withdrawal: Beneficiary claims safely buffered balances."""
         self._ensure_owner()
-        sender = _get_sender()
+        sender = _to_address(_get_sender())
         s_str = _addr_str(sender)
         bal = self.claimable_balances.get(s_str, bigint(0))
         if bal <= bigint(0):
@@ -808,7 +833,8 @@ Respond ONLY with valid JSON:
 
     @gl.public.view
     def get_claimable_balance(self, account: Address) -> str:
-        acc_str = _addr_str(account)
+        acc_addr = _to_address(account)
+        acc_str = _addr_str(acc_addr)
         return str(self.claimable_balances.get(acc_str, bigint(0)))
 
     @gl.public.view
